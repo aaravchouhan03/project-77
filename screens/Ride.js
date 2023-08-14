@@ -11,9 +11,8 @@ import {
 } from "react-native";
 import * as Permissions from "expo-permissions";
 import { BarCodeScanner } from "expo-barcode-scanner";
-//bgImage=require("backgroun2.png");
-//const bgImage = "../assets/background2.png";
-//const bgImage = require("background2.png");
+import db from "../config";
+
 const bgImage = require("../assets/background2.png");
 const appIcon = require("../assets/appIcon.png");
 
@@ -50,6 +49,29 @@ export default class RideScreen extends Component {
     });
   };
 
+  handleTransaction = () => {
+    var { bikeId } = this.state;
+    db.collection("bicycles")
+      .doc(bikeId)
+      .get()
+      .then(doc => {
+        var bike = doc.data();
+        if (bike.is_bike_available) {
+          this.assignBike();
+        } else {
+          this.initiateBookReturn();
+        }
+      });
+  };
+
+  assignBike = () => {
+    console.log("You have rented the bike for next 1 hour. Enjoy your ride!!");
+  };
+
+  returnBike = () => {
+    console.log("We hope you enjoyed your ride");
+  };
+
   render() {
     const { bikeId, userId, domState, scanned } = this.state;
     if (domState !== "normal") {
@@ -71,33 +93,32 @@ export default class RideScreen extends Component {
           <View style={styles.textinputContainer}>
             <TextInput
               style={[styles.textinput, { width: "82%" }]}
+              onChangeText={text => this.setState({ userId: text })}
               placeholder={"User Id"}
               placeholderTextColor={"#FFFFFF"}
               value={userId}
             />
           </View>
           <View style={[styles.textinputContainer, { marginTop: 25 }]}>
-
             <TextInput
               style={styles.textinput}
               placeholder={"Bicycle Id"}
               placeholderTextColor={"#FFFFFF"}
               value={bikeId}
             />
-
             <TouchableOpacity
               style={styles.scanbutton}
-
-             // onPress={this.getCameraPermissions()}
               onPress={() => this.getCameraPermissions()}
-             // onPress={() => this.getCameraPermissions}
-             // onPress=() => this.getCameraPermissions()
-
-
             >
               <Text style={styles.scanbuttonText}>Scan</Text>
             </TouchableOpacity>
           </View>
+          <TouchableOpacity
+            style={[styles.button, { marginTop: 25 }]}
+            onPress={this.handleTransaction}
+          >
+            <Text style={styles.buttonText}>Unlock</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -127,12 +148,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 40,
-    
+    fontFamily: "Rajdhani_600SemiBold",
     paddingTop: 20,
     color: "#4C5D70"
   },
   subtitle: {
     fontSize: 20,
+    fontFamily: "Rajdhani_600SemiBold",
     color: "#4C5D70"
   },
   lowerContainer: {
@@ -155,6 +177,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     fontSize: 18,
     backgroundColor: "#F88379",
+    fontFamily: "Rajdhani_600SemiBold",
     color: "#FFFFFF"
   },
   scanbutton: {
@@ -184,5 +207,6 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 24,
     color: "#4C5D70",
+    fontFamily: "Rajdhani_600SemiBold"
   }
 });
